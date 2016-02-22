@@ -43,16 +43,17 @@ struct mysql_db {
     const char *host;
     const char *user;
     const char *passwd;
-    const char *db;
+    const char *dbname;
     unsigned int port;
     const char *unix_socket;
+	unsigned long flags;
 
-	LIST_ENTRY(pgsql_db)	rlist;
+	LIST_ENTRY(mysql_db)	rlist;
 };
 
 struct kore_mysql {
 	u_int8_t state;
-	unsigned long flags;
+	int connector_flags;
 	char *error;
 	MYSQL_RES *result;
 	struct mysql_conn *conn;
@@ -62,10 +63,12 @@ struct kore_mysql {
 
 extern u_int16_t	mysql_conn_max;
 
-void	kore_mysql_init(void);
+void kore_mysql_init(void);
 int	kore_mysql_query_init(struct kore_mysql *, struct http_request *,
     const char *, const char *, const char *, const char *,
     unsigned int, const char *, unsigned long);
+    
+
 void	kore_mysql_handle(void *, int);
 void	kore_mysql_cleanup(struct kore_mysql *);
 void	kore_mysql_continue(struct http_request *, struct kore_mysql *);

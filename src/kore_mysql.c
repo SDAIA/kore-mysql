@@ -77,32 +77,40 @@ kore_mysql_init(void)
 
 int
 kore_mysql_query_init(struct kore_mysql *mysql, struct http_request *req,
-    const char *host, const char *user, const char *passwd, const char *db,
-    unsigned int port, const char *unix_socket, unsigned long flags)
+    const char *host, const char *user, const char *passwd, const char *dbname,
+    unsigned int port, const char *unix_socket, 
+    unsigned long client_flags, int connector_flags)
 {
 	struct mysql_db		*db;
 
 	memset(mysql, 0, sizeof(*mysql));
-	mysql->flags = flags;
+	mysql->connector_flags = connector_flags;
 	mysql->state = KORE_MYSQL_STATE_INIT;
 
 	if ((req == NULL && (flags & KORE_MYSQL_ASYNC)) ||
 	    ((flags & KORE_MYSQL_ASYNC) && (flags & KORE_MYSQL_SYNC))) {
-		mysql_set_error(mysql, "invalid query init parameters");
+		mysql_set_error(mysql, "Invalid query init parameters");
 		return (KORE_RESULT_ERROR);
 	}
 
 	db = NULL;
-	LIST_FOREACH(db, &mysql_db_conn_strings, rlist) {
-		if (!strcmp(db->name, dbname))
+	LIST_FOREACH(db, &mysql_db_conn, rlist) {
+		if (!strcmp(db->host, host) ||
+			!strcmp(db->user, user) ||
+			!strcmp(db->passwd, passwd) ||
+			!strcmp(db->dbname, dbname))
+			break;
+		if ((db->port != port) &&
+			!strcmp(db->unix_socket, unix_socket))
 			break;
 	}
 
 	if (db == NULL) {
-		mysql_set_error(mysql, "no database found");
+		mysql_set_error(mysql, "No database found");
 		return (KORE_RESULT_ERROR);
 	}
 
+	//TODO from here.
 	if ((mysql->conn = mysql_conn_next(mysql, db, req)) == NULL)
 		return (KORE_RESULT_ERROR);
 
