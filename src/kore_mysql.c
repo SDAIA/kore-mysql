@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2016 Angel Gonzalez <aglezabad@gmail.com>
- * Based on mysql.h of Kore framework:
+ * Based on pgsql.h of Kore framework:
  * Copyright (c) 2014 Joris Vink <joris@coders.se>
  *
  * Permission to use, copy, modify, and distribute this software for any
@@ -110,7 +110,7 @@ kore_mysql_query_init(struct kore_mysql *mysql, struct http_request *req,
 		return (KORE_RESULT_ERROR);
 	}
 
-	//TODO from here.
+	
 	if ((mysql->conn = mysql_conn_next(mysql, db, req)) == NULL)
 		return (KORE_RESULT_ERROR);
 
@@ -127,27 +127,27 @@ kore_mysql_query_init(struct kore_mysql *mysql, struct http_request *req,
 	return (KORE_RESULT_OK);
 }
 
+
 int
 kore_mysql_query(struct kore_mysql *mysql, const char *query)
 {
 	if (mysql->conn == NULL) {
-		mysql_set_error(mysql, "no connection was set before query");
+		mysql_set_error(mysql, "No connection was set before query.");
 		return (KORE_RESULT_ERROR);
 	}
 
 	if (mysql->flags & KORE_MYSQL_SYNC) {
-		mysql->result = PQexec(mysql->conn->db, query);
-
-		if ((PQresultStatus(mysql->result) != MYRES_TUPLES_OK) &&
-		    (PQresultStatus(mysql->result) != MYRES_COMMAND_OK)) {
-			mysql_set_error(mysql, PQerrorMessage(mysql->conn->db));
+		if (mysql_query(mysql->conn->mysql, query) != 0){
+			mysql_set_error(mysql, mysql_error(mysql->conn->mysql));
 			return (KORE_RESULT_ERROR);
 		}
+		mysql->result = mysql_store_result(mysql->conn->mysql)
+		mysql->result = PQexec(mysql->conn->db, query);
 
 		mysql->state = KORE_MYSQL_STATE_DONE;
 	} else {
-		if (!PQsendQuery(mysql->conn->db, query)) {
-			mysql_set_error(mysql, PQerrorMessage(mysql->conn->db));
+		if (mysql_query(mysql->conn->mysql, query) != 0) {
+			mysql_set_error(mysql, mysql_error(mysql->conn->mysql));
 			return (KORE_RESULT_ERROR);
 		}
 
@@ -157,6 +157,7 @@ kore_mysql_query(struct kore_mysql *mysql, const char *query)
 	return (KORE_RESULT_OK);
 }
 
+	//TODO from here.
 int
 kore_mysql_query_params(struct kore_mysql *mysql,
     const char *query, int result, u_int8_t count, ...)
@@ -167,7 +168,7 @@ kore_mysql_query_params(struct kore_mysql *mysql,
 	int		*lengths, *formats, ret;
 
 	if (mysql->conn == NULL) {
-		mysql_set_error(mysql, "no connection was set before query");
+		mysql_set_error(mysql, "No connection was set before query.");
 		return (KORE_RESULT_ERROR);
 	}
 
@@ -467,19 +468,32 @@ mysql_conn_create(struct kore_mysql *mysql, struct mysql_db *db)
 {
 	struct mysql_conn	*conn;
 
-	if (db == NULL || db->conn_string == NULL)
-		fatal("mysql_conn_create: no connection string");
+	if (db == NULL ||
+		db->host == NULL ||
+		db->user == NULL ||
+		db->passwd == NULL ||
+		db->dbname == NULL)
+			if (db->port == 0 || db->unix_socket == NULL)
+				fatal("mysql_conn_create: No connection data.");
 
 	mysql_conn_count++;
 	conn = kore_malloc(sizeof(*conn));
 	kore_debug("mysql_conn_create(): %p", conn);
 
-	conn->db = PQconnectdb(db->conn_string);
-	if (conn->db == NULL || (PQstatus(conn->db) != CONNECTION_OK)) {
-		mysql_set_error(mysql, PQerrorMessage(conn->db));
+	conn->mysql = mysql_init(conn->mysql);
+	if (conn->mysql == NULL){
+		mysql_set_error(mysql, mysql_error(conn->mysql));
 		mysql_conn_cleanup(conn);
 		return (NULL);
 	}
+	
+	if (mysql_real_connect(conn->mysql, db->host, db->user,
+		db->passwd, db->dbname, db->port, db->unix_socket,
+		db->flags) == NULL) {
+		mysql_set_error(mysql, mysql_error(conn->mysql));
+		mysql_conn_cleanup(conn);
+		return (NULL);
+	}	
 
 	conn->job = NULL;
 	conn->flags = MYSQL_CONN_FREE;

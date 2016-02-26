@@ -33,6 +33,10 @@ extern "C" {
 #endif
 
 struct mysql_conn {
+	u_int8_t			type;
+	u_int8_t			flags;
+	char				*name;
+	
     MYSQL *mysql;
 
 	struct mysql_job		*job;
@@ -53,7 +57,7 @@ struct mysql_db {
 
 struct kore_mysql {
 	u_int8_t state;
-	int connector_flags;
+	int flags;
 	char *error;
 	MYSQL_RES *result;
 	struct mysql_conn *conn;
