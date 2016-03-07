@@ -77,8 +77,6 @@ void	kore_mysql_handle(void *, int);
 void	kore_mysql_cleanup(struct kore_mysql *);
 void	kore_mysql_continue(struct http_request *, struct kore_mysql *);
 int	kore_mysql_query(struct kore_mysql *, const char *);
-int	kore_mysql_query_params(struct kore_mysql *,
-	    const char *, int, u_int8_t, ...);
 int	kore_mysql_register(const char *, const char *);
 int	kore_mysql_ntuples(struct kore_mysql *);
 void	kore_mysql_logerror(struct kore_mysql *);
