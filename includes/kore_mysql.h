@@ -73,16 +73,16 @@ int	kore_mysql_query_init(struct kore_mysql *, struct http_request *,
     unsigned int, const char *, unsigned long);
     
 
-void	kore_mysql_handle(void *, int);
+//void	kore_mysql_handle(void *, int);
 void	kore_mysql_cleanup(struct kore_mysql *);
-void	kore_mysql_continue(struct http_request *, struct kore_mysql *);
+//void	kore_mysql_continue(struct http_request *, struct kore_mysql *);
 int	kore_mysql_query(struct kore_mysql *, const char *);
 int	kore_mysql_register(const char *, const char *);
-int	kore_mysql_ntuples(struct kore_mysql *);
+//int	kore_mysql_ntuples(struct kore_mysql *);
 void	kore_mysql_logerror(struct kore_mysql *);
 void	kore_mysql_queue_remove(struct http_request *);
-char	*kore_mysql_getvalue(struct kore_mysql *, int, int);
-int	kore_mysql_getlength(struct kore_mysql *, int, int);
+//char	*kore_mysql_getvalue(struct kore_mysql *, int, int);
+//int	kore_mysql_getlength(struct kore_mysql *, int, int);
 
 #if defined(__cplusplus)
 }

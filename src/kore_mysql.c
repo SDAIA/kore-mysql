@@ -175,7 +175,7 @@ kore_mysql_register(const char *dbname, const char *connstring)
 	return (KORE_RESULT_OK);
 }
 
-void
+/*void
 kore_mysql_handle(void *c, int err)
 {
 	struct http_request	*req;
@@ -203,9 +203,9 @@ kore_mysql_handle(void *c, int err)
 	} else {
 		http_request_wakeup(req);
 	}
-}
+}*/
 
-void
+/*void
 kore_mysql_continue(struct http_request *req, struct kore_mysql *mysql)
 {
 	kore_debug("kore_mysql_continue: %p->%p (%d)",
@@ -236,7 +236,7 @@ kore_mysql_continue(struct http_request *req, struct kore_mysql *mysql)
 	default:
 		fatal("unknown mysql state %d", mysql->state);
 	}
-}
+}*/
 
 void
 kore_mysql_cleanup(struct kore_mysql *mysql)
@@ -244,7 +244,7 @@ kore_mysql_cleanup(struct kore_mysql *mysql)
 	kore_debug("kore_mysql_cleanup(%p)", mysql);
 
 	if (mysql->result != NULL)
-		PQclear(mysql->result);
+		mysql_free_result(mysql->result);
 
 	if (mysql->error != NULL)
 		kore_mem_free(mysql->error);
@@ -265,11 +265,11 @@ kore_mysql_cleanup(struct kore_mysql *mysql)
 void
 kore_mysql_logerror(struct kore_mysql *mysql)
 {
-	kore_log(LOG_NOTICE, "mysql error: %s",
+	kore_log(LOG_NOTICE, "MySQL error: %s",
 	    (mysql->error) ? mysql->error : "unknown");
 }
 
-int
+/*int
 kore_mysql_ntuples(struct kore_mysql *mysql)
 {
 	return (PQntuples(mysql->result));
@@ -285,7 +285,7 @@ char *
 kore_mysql_getvalue(struct kore_mysql *mysql, int row, int col)
 {
 	return (PQgetvalue(mysql->result, row, col));
-}
+}*/
 
 void
 kore_mysql_queue_remove(struct http_request *req)
